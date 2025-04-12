@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 // import bcrypt from 'bcryptjs';
 
 import User from "../models/User.model.js";
+import { verifyToken } from "../middleware/auth.js";
 
 const router = express.Router()
 
@@ -43,5 +44,14 @@ router.post('/login', async(req, res) => {
         res.status(500).json({ message: 'Login failed', error: error.message });
     }
 })
+
+router.get("/users", verifyToken, async (req, res) => {
+    try {
+      const users = await User.find({}, "_id username email"); // Only select necessary fields
+      res.status(200).json(users);
+    } catch (error) {
+      res.status(500).json({ message: "Fetching users failed", error: error.message });
+    }
+  });
 
 export default router

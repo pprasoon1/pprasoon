@@ -9,6 +9,7 @@ import Projects from './pages/Projects'
 import Experience from './pages/Experience'
 import Skills from './pages/Skills'
 import BlogDetail from './pages/BlogDetail'
+import ChatPage from './pages/ChatPage'
 
 const App = () => {
   return (
@@ -22,6 +23,7 @@ const App = () => {
       <Route path="/blogs/:id" element={<BlogDetail />} />
       <Route path="/editor" element={<BlogEditor />} />
       <Route path="/auth" element={<Auth />} />
+      <Route path="/chat" element={<ChatPage />} />
 
     </Routes>
   )
