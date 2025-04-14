@@ -1,5 +1,5 @@
 import express from "express";
-import { verifyToken } from "../middleware/auth.js";
+import { verifyToken, isAdmin } from "../middleware/auth.js";
 import Blog from "../models/Blog.model.js"
 
 
@@ -18,16 +18,34 @@ router.get('/', async (req, res) => {
 });
 
 //Create Blog
-router.post('/', verifyToken, async(req, res)=> {
+router.post('/', verifyToken, isAdmin, async(req, res) => {
     try {
-        const blog = new Blog({...req.body, author: req.userId});
-        await blog.save()
-        res.status(200).json({message: "Blog created successfully"})
+        const { title, content, category, tags } = req.body;
+        
+        if (!title || !content) {
+            return res.status(400).json({ message: 'Title and content are required' });
+        }
 
+        const blog = new Blog({
+            title,
+            content,
+            category,
+            tags,
+            author: req.userId
+        });
+
+        const savedBlog = await blog.save();
+        const populatedBlog = await Blog.findById(savedBlog._id).populate('author', 'username');
+        
+        res.status(201).json(populatedBlog);
     } catch (error) {
-        res.status(500).json({ message: 'Create failed', error: error.message });
+        console.error('Blog creation error:', error);
+        res.status(500).json({ 
+            message: 'Failed to create blog', 
+            error: error.message 
+        });
     }
-})
+});
 
 
 
@@ -43,7 +61,7 @@ router.get('/:id', async (req, res) => {
   });
 
 // Update Blog
-router.put('/:id', verifyToken, async (req, res) => {
+router.put('/:id', verifyToken, isAdmin, async (req, res) => {
     try {
       const blog = await Blog.findById(req.params.id);
       if (!blog || blog.author.toString() !== req.userId) {
@@ -58,7 +76,7 @@ router.put('/:id', verifyToken, async (req, res) => {
   });
 
   // Delete Blog
-router.delete('/:id', verifyToken, async (req, res) => {
+router.delete('/:id', verifyToken, isAdmin, async (req, res) => {
     try {
       const blog = await Blog.findById(req.params.id);
       if (!blog || blog.author.toString() !== req.userId) {

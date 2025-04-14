@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
-import axios from "../api/axios"; // ✅ FIXED
-// Make sure this points to the same axios file you used in login/signup
+import axios from "../api/axios";
 
 const UserList = ({ onSelectUser, currentUser }) => {
   const [users, setUsers] = useState([]);
@@ -8,36 +7,41 @@ const UserList = ({ onSelectUser, currentUser }) => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const res = await axios.get("/auth/users");
-        if (currentUser?._id) {
-          const filtered = res.data.filter(u => u._id !== currentUser._id);
-          setUsers(filtered);
+        const response = await axios.get("/auth/users");
+        if (currentUser?.isAdmin) {
+          // Admin can see all users except themselves
+          setUsers(response.data.filter(user => user._id !== currentUser.id));
         } else {
-          setUsers(res.data); // Fallback — just in case
+          // Regular users can only see admin
+          setUsers(response.data.filter(user => user.isAdmin));
         }
       } catch (err) {
-        console.error("❌ Error fetching users:", err);
+        console.error("Error fetching users:", err);
       }
     };
-  
-    if (currentUser) {
-      fetchUsers();
-    }
+
+    fetchUsers();
   }, [currentUser]);
-  
 
   return (
-    <div className="w-1/4 border-r h-full p-4 overflow-y-auto">
-      <h3 className="text-lg font-semibold mb-3">Users</h3>
-      {users.map(user => (
-        <div
-          key={user._id}
-          className="p-2 cursor-pointer hover:bg-gray-200 rounded"
-          onClick={() => onSelectUser(user)}
-        >
-          {user.username}
-        </div>
-      ))}
+    <div className="w-64 bg-white shadow-lg p-4">
+      <h2 className="text-xl font-semibold mb-4">
+        {currentUser?.isAdmin ? "Chat with Users" : "Chat with Admin"}
+      </h2>
+      <div className="space-y-2">
+        {users.map((user) => (
+          <div
+            key={user._id}
+            onClick={() => onSelectUser(user)}
+            className="p-3 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors"
+          >
+            <div className="font-medium">{user.username}</div>
+            {user.isAdmin && (
+              <div className="text-sm text-blue-600">Admin</div>
+            )}
+          </div>
+        ))}
+      </div>
     </div>
   );
 };

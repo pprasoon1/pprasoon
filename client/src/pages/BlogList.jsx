@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext';
 
 export default function BlogList() {
   const [blogs, setBlogs] = useState([]);
-  const { user, logout } = useAuth();
+  const { user, logout } = useAuth();  // Add logout to destructuring
 
   useEffect(() => {
     const fetchBlogs = async () => {
@@ -20,31 +20,57 @@ export default function BlogList() {
   }, []);
 
   return (
-    <div>
-      <header>
-        <h1>📝 My Blog</h1>
-        {user ? (
-          <>
-            <span>Hi, {user.username}</span>
-            <button onClick={logout}>Logout</button>
-            <Link to="/editor">Create Blog</Link>
-          </>
-        ) : (
-          <Link to="/auth">Login</Link>
-        )}
+    <div className="max-w-6xl mx-auto px-4 py-8">
+      <header className="flex items-center justify-between mb-8 pb-4 border-b">
+        <h1 className="text-3xl font-bold text-gray-900">Blog Posts</h1>
+        <div className="flex items-center gap-4">
+          {user?.isAdmin && (
+            <Link
+              to="/editor"
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              Create Blog
+            </Link>
+          )}
+          {user ? (
+            <button
+              onClick={logout}
+              className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+            >
+              Logout
+            </button>
+          ) : (
+            <Link
+              to="/auth"
+              className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+            >
+              Login
+            </Link>
+          )}
+        </div>
       </header>
 
-      <div>
-      {blogs.map(blog => (
-  <div key={blog._id} style={{ border: '1px solid #ccc', padding: '1rem', marginBottom: '1rem' }}>
-    <h2>{blog.title}</h2>
-    <p>By: {blog.author?.username || 'Unknown'}</p> {/* 🛡 Safe access */}
-    <p>{blog.content.slice(0, 100)}...</p>
-    <p>Category: {blog.category || 'Uncategorized'}</p>
-<p>Tags: {blog.tags?.join(', ')}</p>
-    <Link to={`/blogs/${blog._id}`}>Read more</Link>
-  </div>
-))}
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {blogs.map(blog => (
+          <div key={blog._id} className="bg-white rounded-xl shadow-md overflow-hidden">
+            <div className="p-6">
+              <h2 className="text-xl font-semibold mb-2">{blog.title}</h2>
+              <p className="text-sm text-gray-500 mb-2">By: {blog.author?.username || 'Unknown'}</p>
+              <p className="text-gray-600 mb-4 line-clamp-3">{blog.content}</p>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-500">
+                  Category: {blog.category || 'Uncategorized'}
+                </span>
+                <Link
+                  to={`/blogs/${blog._id}`}
+                  className="text-blue-600 hover:text-blue-800"
+                >
+                  Read more →
+                </Link>
+              </div>
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );

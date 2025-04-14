@@ -33,12 +33,17 @@ router.post('/login', async(req, res) => {
         const user = await User.findOne({email});
         if(!user) return res.status(404).json({message: "User not found"})
 
-            // const match = await bcrypt.compare(password, user.password)
+        if(password !== user.password) return res.status(401).json({message: "Invalid password"})
             
-            if(password !== user.password) return res.status(401).json({message: "Invalid password"})
-            
-                const token = jwt.sign({id: user._id}, "prasoon")
-                res.status(200).json({message:"Login successful", token})
+        const token = jwt.sign(
+          { 
+            id: user._id,
+            isAdmin: user.isAdmin,  // Include isAdmin in token
+            username: user.username 
+          }, 
+          "prasoon"
+        );
+        res.status(200).json({message:"Login successful", token})
 
     } catch (error) {
         res.status(500).json({ message: 'Login failed', error: error.message });
@@ -47,7 +52,7 @@ router.post('/login', async(req, res) => {
 
 router.get("/users", verifyToken, async (req, res) => {
     try {
-      const users = await User.find({}, "_id username email"); // Only select necessary fields
+      const users = await User.find({}, "_id username email isAdmin"); // Include isAdmin field
       res.status(200).json(users);
     } catch (error) {
       res.status(500).json({ message: "Fetching users failed", error: error.message });

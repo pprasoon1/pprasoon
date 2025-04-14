@@ -1,7 +1,8 @@
 // src/pages/Projects.jsx
 import React from 'react';
 
-const projects = [
+// Export the projects array
+export const projects = [
   {
     title: 'Cropwise',
     description: 'An ML-powered farm assistant recommending crops, fertilizers, and irrigation techniques.',
@@ -17,6 +18,7 @@ const projects = [
   // Add more projects here
 ];
 
+// Keep your existing Projects component
 const Projects = () => {
   return (
     <div className="p-8 max-w-5xl mx-auto">
