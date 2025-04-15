@@ -2,8 +2,10 @@ import express from "express";
 import mongoose from "mongoose";
 import cors from "cors";
 import dotenv from "dotenv";
-
+import { Server } from "socket.io";
 import http from "http";
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 import authRouter from "./routes/auth.routes.js";
 import blogRouter from "./routes/blog.routes.js";
@@ -15,13 +17,32 @@ dotenv.config();
 const app = express();
 const server = http.createServer(app);
 
-app.use(cors());
+// CORS configuration
+app.use(cors({
+  origin: process.env.NODE_ENV === 'production' 
+    ? 'your_production_domain' 
+    : 'http://localhost:5173',
+  credentials: true
+}));
+
 app.use(express.json());
 
-// Routes
+// API routes
 app.use("/api/auth", authRouter);
 app.use("/api/blogs", blogRouter);
 app.use("/api/messages", messageRoutes);
+
+// Serve static files in production
+if (process.env.NODE_ENV === 'production') {
+  const __dirname = path.dirname(fileURLToPath(import.meta.url));
+  const clientPath = path.join(__dirname, '../client/dist');
+  
+  app.use(express.static(clientPath));
+  
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(clientPath, 'index.html'));
+  });
+}
 
 // Initialize socket using the separate socket.js file
 const io = initSocket(server);
